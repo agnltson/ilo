@@ -4,13 +4,11 @@
 
 #define SCRATCHPAD_SIZE 32
 
-namespace machine::scratchpad {
-    class Scratchpad {
-        public:
-            Scratchpad();
-            void put(uint8_t, int32_t);
-            int32_t get(uint8_t);
-        private:
-            int32_t _data[SCRATCHPAD_SIZE];
-    };
-}
+class Scratchpad {
+    public:
+        Scratchpad();
+        void put(uint8_t, int32_t);
+        int32_t get(uint8_t) const;
+    private:
+        int32_t _data[SCRATCHPAD_SIZE];
+};
