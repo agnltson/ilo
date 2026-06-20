@@ -3,7 +3,7 @@
 # ==============================
 
 PROJECT      := ilo
-CC           := gcc
+CC           := g++
 CSTD         := -std=c++23
 
 WARNINGS     := -Wall
