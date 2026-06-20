@@ -4,7 +4,7 @@
 
 #define SCRATCHPAD_SIZE 32
 
-namespace scratchpad {
+namespace machine {
     class Scratchpad {
         public:
             Scratchpad();

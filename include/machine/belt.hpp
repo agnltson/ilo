@@ -4,7 +4,7 @@
 
 #define BELT_SIZE 32
 
-namespace belt {
+namespace machine {
     class Belt {
         public:
             Belt();
