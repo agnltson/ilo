@@ -7,6 +7,7 @@
 class Belt {
     public:
         Belt();
+        Belt(const Belt*);
         void push(int32_t);
         int32_t get(uint8_t) const;
     private:

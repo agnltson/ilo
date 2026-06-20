@@ -1,7 +1,12 @@
+#include <cstring>
+
 #include "machine/belt.hpp"
 
-
 Belt::Belt():_data({0}), _head(0){}
+
+Belt::Belt(const Belt* caller_belt):_head(caller_belt->_head){
+    memcpy(_data, caller_belt->_data, sizeof(int32_t)*BELT_SIZE);
+}
 
 void Belt::push(int32_t value) {
     this->_head = (this->_head+1) % BELT_SIZE;
