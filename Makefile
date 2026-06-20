@@ -77,7 +77,7 @@ $(BUILD_DIR)/tests_%.o: $(TEST_DIR)/%.cpp | $(BUILD_DIR)
 .PHONY: format
 format:
 	@echo "Formatting..."
-	@find $(SRC_DIR) include $(TEST_DIR) -name "*.cpp" -o -name "*.h" | \
+	@find $(SRC_DIR) include $(TEST_DIR) -name "*.cpp" -o -name "*.hpp" | \
 	xargs $(CLANG_FORMAT) -i
 
 # ==============================
