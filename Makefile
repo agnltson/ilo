@@ -3,7 +3,7 @@
 # ==============================
 
 PROJECT      := ilo
-CC           := g++
+CXX           := g++
 CSTD         := -std=c++23
 
 WARNINGS     := -Wall
@@ -52,10 +52,10 @@ $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 $(TARGET): $(OBJ_FILES)
-	$(CC) $(OBJ_FILES) -o $@
+	$(CXX) $(OBJ_FILES) -o $@
 
 # ==============================
 # Tests
@@ -63,12 +63,12 @@ $(TARGET): $(OBJ_FILES)
 
 .PHONY: test
 test: $(OBJ_NO_MAIN) $(TEST_OBJS)
-	$(CC) $(OBJ_NO_MAIN) $(TEST_OBJS) -o $(BUILD_DIR)/run_tests
+	$(CXX) $(OBJ_NO_MAIN) $(TEST_OBJS) -o $(BUILD_DIR)/run_tests
 	@echo "Running tests..."
 	@./$(BUILD_DIR)/run_tests
 
 $(BUILD_DIR)/tests_%.o: $(TEST_DIR)/%.cpp | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 # ==============================
 # Format
