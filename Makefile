@@ -71,6 +71,14 @@ $(BUILD_DIR)/tests_%.o: $(TEST_DIR)/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 # ==============================
+# Debug
+# ==============================
+
+.PHONY: debug
+debug:
+	$(MAKE) all CFLAGS="$(CFLAGS) -DDBG"
+
+# ==============================
 # Format
 # ==============================
 
