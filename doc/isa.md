@@ -223,7 +223,7 @@ It is initialized to zero on frame creation and is not accessible from other fra
 Semantics:
 
 ```
-scratchpad[B] = belt[A]
+scratchpad[A] = belt[B]
 ```
 
 ---
