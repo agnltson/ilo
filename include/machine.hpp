@@ -11,12 +11,13 @@ class Machine {
     public:
         Machine();
         ~Machine();
-        void load_program(std::string);
+        int load_program(std::string);
         void run();
         void inc_pc();
     private:
         int32_t frame_pop(); // pop the last frame and returns the value on frame.belt[0]
         void frame_add(); // push a new frame on the stack, the new frame belt is a copy of the frame under it
+        void process_instruction(uint32_t instruction);
 
         int32_t _pc;
         std::vector<Frame*> _stack_frame;
