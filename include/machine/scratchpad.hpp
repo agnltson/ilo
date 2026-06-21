@@ -11,4 +11,8 @@ class Scratchpad {
         int32_t get(uint8_t) const;
     private:
         int32_t _data[SCRATCHPAD_SIZE];
+#ifdef DBG
+    public:
+        void debug();
+#endif // DBG
 };

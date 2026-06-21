@@ -22,7 +22,9 @@ class Machine {
         std::vector<Frame*> _stack_frame;
         int32_t _ram[MEMORY_SIZE];
         bool _running;
+
 #ifdef DBG
+    public:
         void debug();
 #endif // DBG
 };

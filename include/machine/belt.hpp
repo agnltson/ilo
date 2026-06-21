@@ -13,4 +13,8 @@ class Belt {
     private:
         int32_t _data[BELT_SIZE];
         uint8_t _head;
+#ifdef DBG
+    public:
+        void debug();
+#endif // DBG
 };

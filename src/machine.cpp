@@ -1,6 +1,5 @@
 #include <fstream>
 #include <cstdint>
-#include <iostream>
 
 #include "machine.hpp"
 
@@ -31,11 +30,12 @@ void Machine::load_program(std::string binary_path) {
 }
 
 void Machine::run() {
+    this->_running = true;
+    this->_stack_frame.push_back(new Frame(0));
+
 #ifdef DBG
     this->debug();
 #endif // DBG
-    this->_running = true;
-
     while (this->_running) {
     }
 }
@@ -57,7 +57,15 @@ void Machine::inc_pc() {
 }
 
 #ifdef DBG
+#include <iostream>
+
 void Machine::debug() {
-    std::cout << "TODO" << std::endl;
+    std::cout << "#### DEBUG ###" << std::endl;
+    size_t count = 0;
+    for (Frame* frame: this->_stack_frame) {
+        std::cout << "--- Frame " << count << " ---" << std::endl;
+        frame->debug();
+        count++;
+    }
 }
 #endif // DBG

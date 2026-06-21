@@ -15,4 +15,9 @@ class Frame {
         Scratchpad* scratchpad;
     private:
         uint32_t _return_pc;
+
+#ifdef DBG
+    public:
+        void debug();
+#endif // DBG
 };
