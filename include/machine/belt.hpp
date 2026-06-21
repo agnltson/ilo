@@ -15,6 +15,6 @@ class Belt {
         uint8_t _head;
 #ifdef DBG
     public:
-        void debug();
+        void debug() const;
 #endif // DBG
 };

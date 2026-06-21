@@ -59,7 +59,7 @@ void Machine::inc_pc() {
 #ifdef DBG
 #include <iostream>
 
-void Machine::debug() {
+void Machine::debug() const {
     std::cout << "#### DEBUG ###" << std::endl;
     size_t count = 0;
     for (Frame* frame: this->_stack_frame) {

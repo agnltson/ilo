@@ -20,7 +20,7 @@ int32_t Belt::get(uint8_t index) const {
 #ifdef DBG
 #include <iostream>
 
-void Belt::debug() {
+void Belt::debug() const {
     std::cout << "Belt: ";
     uint8_t idx = this->_head;
     do {

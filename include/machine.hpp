@@ -25,6 +25,6 @@ class Machine {
 
 #ifdef DBG
     public:
-        void debug();
+        void debug() const;
 #endif // DBG
 };

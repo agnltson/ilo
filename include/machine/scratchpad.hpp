@@ -13,6 +13,6 @@ class Scratchpad {
         int32_t _data[SCRATCHPAD_SIZE];
 #ifdef DBG
     public:
-        void debug();
+        void debug() const;
 #endif // DBG
 };

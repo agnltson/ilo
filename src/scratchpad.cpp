@@ -13,7 +13,7 @@ int32_t Scratchpad::get(uint8_t index) const {
 #ifdef DBG
 #include <iostream>
 
-void Scratchpad::debug() {
+void Scratchpad::debug() const {
     std::cout << "Scratchpad:";
     for (int i = 0; i < SCRATCHPAD_SIZE; i++) {
         if (!(i % 8)) {
