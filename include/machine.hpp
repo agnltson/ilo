@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include "machine/frame.hpp"
 
@@ -10,6 +11,7 @@ class Machine {
     public:
         Machine();
         ~Machine();
+        void load_program(std::string);
         void run();
         void inc_pc();
     private:
@@ -20,4 +22,7 @@ class Machine {
         std::vector<Frame*> _stack_frame;
         int32_t _ram[MEMORY_SIZE];
         bool _running;
+#ifdef DBG
+        void debug();
+#endif // DBG
 };
