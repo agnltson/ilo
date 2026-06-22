@@ -21,5 +21,6 @@ void Scratchpad::debug() const {
         }
         std::cout << this->_data[i] << " ";
     }
+    std::cout << std::endl;
 }
 #endif // DBG

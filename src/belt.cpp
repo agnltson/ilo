@@ -22,11 +22,9 @@ int32_t Belt::get(uint8_t index) const {
 
 void Belt::debug() const {
     std::cout << "Belt: ";
-    uint8_t idx = this->_head;
-    do {
-        std::cout << this->_data[idx] << " ";
-        idx = (idx + 1) % BELT_SIZE;
-    } while (idx != this->_head);
+    for (uint8_t i = 0; i < BELT_SIZE; ++i) {
+        std::cout << this->get(i) << " ";
+    }
     std::cout << std::endl;
 }
 #endif // DBG
