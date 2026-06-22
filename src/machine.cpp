@@ -5,6 +5,23 @@
 
 #define MAGIC_CODE 0xD12EA2E2
 
+#define OPCODE_SIZE 6
+#define OPERAND_SIZE 5
+
+// if your compiler doesn't use two's complement it won't work
+inline int32_t i26_to_i32(int32_t val) {
+    if ((val & 0x2000000) == 0) {
+        return val;
+    }
+    // if negative on 26 bits then transfer the sign bit
+    return (1 << 31) & (val & 0x1FFFFFF);
+}
+
+#define GET_OPCODE(inst) (inst & 0x3F)
+#define GET_ARGA(inst) ((inst >> OPCODE_SIZE) & 0x1F)
+#define GET_ARGB(inst) ((inst >> (OPCODE_SIZE + OPERAND_SIZE)) & 0x1F)
+#define GET_IMMEDIATE(inst) (i26_to_i32((inst >> OPCODE_SIZE) & 0x3FFFFFF))
+
 Machine::Machine():_stack_frame(), _ram({0}), _running(false) {}
 
 Machine::~Machine() {}
@@ -50,11 +67,11 @@ void Machine::run() {
     this->_running = true;
     this->_stack_frame.push_back(new Frame(0));
 
-#ifdef DBG
-    this->debug();
-#endif // DBG
     while (this->_running) {
         this->process_instruction(this->_ram[this->_pc]);
+#ifdef DBG
+        this->debug();
+#endif // DBG
     }
 }
 
@@ -73,6 +90,22 @@ void Machine::frame_add() {
 void Machine::inc_pc() {
     ++this->_pc;
 }
+
+void Machine::push_belt(int32_t val) {
+    this->_stack_frame.back()->belt->push(val);
+}
+
+int32_t Machine::get_belt(uint8_t idx) {
+    return this->_stack_frame.back()->belt->get(idx);
+}
+
+void Machine::put_scratchpad(uint8_t idx, int32_t val) {
+    this->_stack_frame.back()->scratchpad->put(idx, val);
+}
+int32_t Machine::get_scratchpad(uint8_t idx) {
+    return this->_stack_frame.back()->scratchpad->get(idx);
+}
+
 #ifdef DBG
 #include <iostream>
 
@@ -88,10 +121,200 @@ void Machine::debug() const {
 #endif // DBG
 
 void Machine::process_instruction(uint32_t instruction) {
-    switch (instruction & 0x1F) {
+    switch (GET_OPCODE(instruction)) {
+        case 0b110001: // add
+            this->add(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b101001: // sub
+            this->sub(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b100101: // mul
+            this->mul(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b111001: // div
+            this->div(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b110101: // and
+            this->andd(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b101101: // or
+            this->orr(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b111101: // xor
+            this->xorr(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b100011: // sll
+            this->sll(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b110011: // srl
+            this->srl(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b010001: // sra
+            this->sra(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b101011: // eq
+            this->eq(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b111011: // lt
+            this->lt(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b100111: // load
+            this->load(GET_ARGA(instruction));
+            this->_pc++;
+            break;
+        case 0b110111: // store
+            this->store(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b101111: // put
+            this->put(GET_ARGA(instruction), GET_ARGB(instruction));
+            this->_pc++;
+            break;
+        case 0b100001: // pick
+            this->pick(GET_ARGA(instruction));
+            this->_pc++;
+            break;
+        case 0b010000: // immh
+            this->immh(GET_IMMEDIATE(instruction));
+            this->_pc++;
+            break;
+        case 0b001000: // imml
+            this->imml(GET_IMMEDIATE(instruction));
+            this->_pc++;
+            break;
+        case 0b011000: // jmp
+            this->jmp(GET_IMMEDIATE(instruction));
+            break;
+        case 0b000100: // jmpif
+            this->jmpif(GET_IMMEDIATE(instruction));
+            break;
+        case 0b010100: // call
+            this->call(GET_IMMEDIATE(instruction));
+            break;
+        case 0b001100: // ret
+            this->ret();
+            break;
+        case 0b111110: // halt
+            this->halt();
+            break;
+        case 0b000000: // nop
+            break;
         default:
+            this->_running = false;
             break;
     }
-    (void)instruction;
 }
 
+#define PUSH_BINARY(op) (this->push_belt(this->get_belt(idxa) op this->get_belt(idxb)))
+
+void Machine::add(uint8_t idxa, uint8_t idxb) {
+    PUSH_BINARY(+);
+}
+
+void Machine::sub(uint8_t idxa, uint8_t idxb) {
+    PUSH_BINARY(-);
+}
+
+void Machine::mul(uint8_t idxa, uint8_t idxb) {
+    PUSH_BINARY(*);
+}
+
+void Machine::div(uint8_t idxa, uint8_t idxb) {
+    PUSH_BINARY(/);
+}
+
+void Machine::andd(uint8_t idxa, uint8_t idxb) {
+    PUSH_BINARY(&);
+}
+
+void Machine::orr(uint8_t idxa, uint8_t idxb) {
+    PUSH_BINARY(|);
+}
+
+void Machine::xorr(uint8_t idxa, uint8_t idxb) {
+    PUSH_BINARY(^);
+}
+
+void Machine::sll(uint8_t idxa, uint8_t idxb) {
+    this->push_belt(this->get_belt(idxa) << (this->get_belt(idxb) & 0x1F));
+}
+
+void Machine::srl(uint8_t idxa, uint8_t idxb) {
+    uint32_t a = static_cast<uint32_t>(this->get_belt(idxa));
+    uint32_t sh = static_cast<uint32_t>(this->get_belt(idxb)) & 0x1F;
+    this->push_belt(static_cast<int32_t>(a >> sh));
+}
+
+void Machine::sra(uint8_t idxa, uint8_t idxb) {
+    int32_t a = this->get_belt(idxa);
+    uint32_t sh = static_cast<uint32_t>(this->get_belt(idxb)) & 0x1F;
+    this->push_belt(a >> sh);
+}
+
+void Machine::eq(uint8_t idxa, uint8_t idxb) {
+    this->push_belt(this->get_belt(idxa) == this->get_belt(idxb) ? 1 : 0);
+}
+
+void Machine::lt(uint8_t idxa, uint8_t idxb) {
+    this->push_belt(this->get_belt(idxa) < this->get_belt(idxb) ? 1 : 0);
+}
+
+void Machine::load(uint8_t idxa) {
+    this->push_belt(this->_ram[this->get_belt(idxa)]);
+}
+
+void Machine::store(uint8_t idxa, uint8_t idxb) {
+    this->_ram[this->get_belt(idxa)] = this->get_belt(idxb);
+}
+
+void Machine::put(uint8_t idxa, uint8_t idxb) {
+    this->put_scratchpad(idxa, this->get_belt(idxb));
+}
+
+void Machine::pick(uint8_t idxa) {
+    this->push_belt(this->get_scratchpad(idxa));
+}
+
+void Machine::immh(int32_t imm) {
+    this->push_belt(imm << 12);
+}
+
+void Machine::imml(int32_t imm) {
+    this->push_belt(imm & 0xFFF);
+}
+
+void Machine::jmp(int32_t imm) {
+    this->_pc = this->_pc + 1 + imm;
+}
+
+void Machine::jmpif(int32_t imm) {
+    if (this->get_belt(0) == 1) {
+        this->_pc = this->_pc + 1 + imm;
+    }
+}
+
+void Machine::call(int32_t imm) {
+    this->frame_add();
+    this->_pc = this->_pc + 1 + imm;
+}
+
+void Machine::ret() {
+    this->_pc = this->_stack_frame.back()->return_pc;
+    this->push_belt(this->frame_pop());
+}
+
+void Machine::halt() {
+    this->_running = false;
+}

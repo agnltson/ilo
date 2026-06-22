@@ -13,8 +13,8 @@ class Frame {
 
         Belt* belt;
         Scratchpad* scratchpad;
+        uint32_t return_pc;
     private:
-        uint32_t _return_pc;
 
 #ifdef DBG
     public:
