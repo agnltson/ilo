@@ -5,6 +5,6 @@ from [Mill Computing](https://millcomputing.com/).
 
 # assembler
 
-This vm runs on [basm](httds://github.com/agnltson/basm)
+This vm runs on [basm](https://github.com/agnltson/basm)
 
 see wiki section for isa description
