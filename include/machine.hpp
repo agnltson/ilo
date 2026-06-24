@@ -2,8 +2,10 @@
 
 #include <vector>
 #include <string>
+#include <expected>
 
 #include "machine/frame.hpp"
+#include "error.hpp"
 
 #define MEMORY_SIZE 65536
 
@@ -11,13 +13,13 @@ class Machine {
     public:
         Machine();
         ~Machine();
-        int load_program(std::string);
+        std::expected<void, IloError> load_program(std::string);
         void run();
         void inc_pc();
     private:
         int32_t frame_pop(); // pop the last frame and returns the value on frame.belt[0]
         void frame_add(); // push a new frame on the stack, the new frame belt is a copy of the frame under it
-        void process_instruction(uint32_t);
+        std::expected<void, IloError> process_instruction(uint32_t);
         void push_belt(int32_t);
         int32_t get_belt(uint8_t);
         void put_scratchpad(uint8_t, int32_t);
@@ -25,7 +27,7 @@ class Machine {
 
         int32_t _pc;
         std::vector<Frame*> _stack_frame;
-        int32_t _ram[MEMORY_SIZE];
+        int32_t _memory[MEMORY_SIZE];
         bool _running;
 
         void add(uint8_t, uint8_t);

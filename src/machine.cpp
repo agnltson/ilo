@@ -1,5 +1,6 @@
 #include <fstream>
 #include <cstdint>
+#include <iostream>
 
 #include "machine.hpp"
 
@@ -22,7 +23,7 @@ inline int32_t i26_to_i32(int32_t val) {
 #define GET_ARGB(inst) ((inst >> (OPCODE_SIZE + OPERAND_SIZE)) & 0x1F)
 #define GET_IMMEDIATE(inst) (i26_to_i32((inst >> OPCODE_SIZE) & 0x3FFFFFF))
 
-Machine::Machine():_stack_frame(), _ram({0}), _running(false) {}
+Machine::Machine():_stack_frame(), _memory({0}), _running(false) {}
 
 Machine::~Machine() {}
 
@@ -45,22 +46,25 @@ int check_validity(std::ifstream& file) {
     return 1;
 }
 
-int Machine::load_program(std::string binary_path) {
+std::expected<void, IloError> Machine::load_program(std::string binary_path) {
     std::ifstream file(binary_path, std::ios::binary);
+    if (!file) {
+        return std::unexpected(IloError::NoInputFile);
+    }
 
     size_t i = 0;
     int err = check_validity(file);
     if (err) {
-        return err;
+        return std::unexpected(IloError::InvalidBinaryMetadata);
     }
     while (file.peek() != EOF) {
         uint32_t value = read_u32_le(file);
         if (file) {
-            this->_ram[i] = value;
+            this->_memory[i] = value;
             i++;
         }
     }
-    return 0;
+    return {};
 }
 
 void Machine::run() {
@@ -68,7 +72,11 @@ void Machine::run() {
     this->_stack_frame.push_back(new Frame(0));
 
     while (this->_running) {
-        this->process_instruction(this->_ram[this->_pc]);
+        std::expected<void, IloError> res = this->process_instruction(this->_memory[this->_pc]);
+        if (!res) {
+            log(res.error());
+            return;
+        }
 #ifdef DBG
         this->debug();
 #endif // DBG
@@ -107,7 +115,6 @@ int32_t Machine::get_scratchpad(uint8_t idx) {
 }
 
 #ifdef DBG
-#include <iostream>
 
 void Machine::debug() const {
     std::cout << "#### DEBUG ###" << std::endl;
@@ -120,7 +127,7 @@ void Machine::debug() const {
 }
 #endif // DBG
 
-void Machine::process_instruction(uint32_t instruction) {
+std::expected<void, IloError> Machine::process_instruction(uint32_t instruction) {
     switch (GET_OPCODE(instruction)) {
         case 0b110001: // add
             this->add(GET_ARGA(instruction), GET_ARGB(instruction));
@@ -213,8 +220,9 @@ void Machine::process_instruction(uint32_t instruction) {
             break;
         default:
             this->_running = false;
-            break;
+            return std::unexpected(IloError::InvalidOpcode);
     }
+    return {};
 }
 
 #define PUSH_BINARY(op) (this->push_belt(this->get_belt(idxa) op this->get_belt(idxb)))
@@ -272,11 +280,11 @@ void Machine::lt(uint8_t idxa, uint8_t idxb) {
 }
 
 void Machine::load(uint8_t idxa) {
-    this->push_belt(this->_ram[this->get_belt(idxa)]);
+    this->push_belt(this->_memory[this->get_belt(idxa)]);
 }
 
 void Machine::store(uint8_t idxa, uint8_t idxb) {
-    this->_ram[this->get_belt(idxa)] = this->get_belt(idxb);
+    this->_memory[this->get_belt(idxa)] = this->get_belt(idxb);
 }
 
 void Machine::put(uint8_t idxa, uint8_t idxb) {

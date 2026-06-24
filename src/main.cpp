@@ -9,7 +9,11 @@ int main(int argc, char* argv[]) {
     }
 
     Machine machine;
-    machine.load_program(argv[1]);
+    auto load_res = machine.load_program(argv[1]);
+    if (!load_res) {
+        log(load_res.error());
+        return 1;
+    }
     machine.run();
     return 0;
 }
