@@ -5,16 +5,17 @@
 #define BELT_SIZE 32
 
 class Belt {
-    public:
-        Belt();
-        Belt(const Belt*);
-        void push(int32_t);
-        int32_t get(uint8_t) const;
-    private:
-        int32_t _data[BELT_SIZE];
-        uint8_t _head;
+public:
+    Belt();
+    Belt(const Belt*);
+    void push(int32_t);
+    int32_t get(uint8_t) const;
+
+private:
+    int32_t _data[BELT_SIZE];
+    uint8_t _head;
 #ifdef DBG
-    public:
-        void debug() const;
+public:
+    void debug() const;
 #endif // DBG
 };

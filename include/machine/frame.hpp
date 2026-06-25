@@ -6,18 +6,18 @@
 #include "machine/scratchpad.hpp"
 
 class Frame {
-    public:
-        Frame(uint32_t);
-        Frame(uint32_t, const Belt*);
-        ~Frame();
+public:
+    Frame(uint32_t);
+    Frame(uint32_t, const Belt*);
+    ~Frame();
 
-        Belt* belt;
-        Scratchpad* scratchpad;
-        uint32_t return_pc;
-    private:
+    Belt* belt;
+    Scratchpad* scratchpad;
+    uint32_t return_pc;
 
+private:
 #ifdef DBG
-    public:
-        void debug() const;
+public:
+    void debug() const;
 #endif // DBG
 };

@@ -1,5 +1,5 @@
-#include <fstream>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 
 #include "machine.hpp"
@@ -23,17 +23,17 @@ inline int32_t i26_to_i32(int32_t val) {
 #define GET_ARGB(inst) ((inst >> (OPCODE_SIZE + OPERAND_SIZE)) & 0x1F)
 #define GET_IMMEDIATE(inst) (i26_to_i32((inst >> OPCODE_SIZE) & 0x3FFFFFF))
 
-Machine::Machine():_stack_frame(), _memory(0), _running(false) {}
+Machine::Machine() : _stack_frame(), _memory(0), _running(false) {
+}
 
-Machine::~Machine() {}
+Machine::~Machine() {
+}
 
 uint32_t read_u32_le(std::ifstream& file) {
     uint8_t bytes[4];
     file.read(reinterpret_cast<char*>(bytes), 4);
-    return static_cast<uint32_t>(bytes[0])
-         | static_cast<uint32_t>(bytes[1]) << 8
-         | static_cast<uint32_t>(bytes[2]) << 16
-         | static_cast<uint32_t>(bytes[3]) << 24;
+    return static_cast<uint32_t>(bytes[0]) | static_cast<uint32_t>(bytes[1]) << 8 |
+           static_cast<uint32_t>(bytes[2]) << 16 | static_cast<uint32_t>(bytes[3]) << 24;
 }
 
 int check_validity(std::ifstream& file) {
@@ -91,7 +91,7 @@ int32_t Machine::frame_pop() {
 }
 
 void Machine::frame_add() {
-    Frame* new_frame = new Frame(this->_pc+1, this->_stack_frame.back()->belt);
+    Frame* new_frame = new Frame(this->_pc + 1, this->_stack_frame.back()->belt);
     this->_stack_frame.push_back(new_frame);
 }
 
@@ -119,7 +119,7 @@ int32_t Machine::get_scratchpad(uint8_t idx) {
 void Machine::debug() const {
     std::cout << "#### DEBUG ###" << std::endl;
     size_t count = 0;
-    for (Frame* frame: this->_stack_frame) {
+    for (Frame* frame : this->_stack_frame) {
         std::cout << "--- Frame " << count << " ---" << std::endl;
         frame->debug();
         count++;
@@ -129,98 +129,98 @@ void Machine::debug() const {
 
 std::expected<void, IloError> Machine::process_instruction(uint32_t instruction) {
     switch (GET_OPCODE(instruction)) {
-        case 0b110001: // add
-            this->add(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b101001: // sub
-            this->sub(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b100101: // mul
-            this->mul(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b111001: // div
-            this->div(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b110101: // and
-            this->andd(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b101101: // or
-            this->orr(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b111101: // xor
-            this->xorr(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b100011: // sll
-            this->sll(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b110011: // srl
-            this->srl(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b010001: // sra
-            this->sra(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b101011: // eq
-            this->eq(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b111011: // lt
-            this->lt(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b100111: // load
-            this->load(GET_ARGA(instruction));
-            this->_pc++;
-            break;
-        case 0b110111: // store
-            this->store(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b101111: // put
-            this->put(GET_ARGA(instruction), GET_ARGB(instruction));
-            this->_pc++;
-            break;
-        case 0b100001: // pick
-            this->pick(GET_ARGA(instruction));
-            this->_pc++;
-            break;
-        case 0b010000: // immh
-            this->immh(GET_IMMEDIATE(instruction));
-            this->_pc++;
-            break;
-        case 0b001000: // imml
-            this->imml(GET_IMMEDIATE(instruction));
-            this->_pc++;
-            break;
-        case 0b011000: // jmp
-            this->jmp(GET_IMMEDIATE(instruction));
-            break;
-        case 0b000100: // jmpif
-            this->jmpif(GET_IMMEDIATE(instruction));
-            break;
-        case 0b010100: // call
-            this->call(GET_IMMEDIATE(instruction));
-            break;
-        case 0b001100: // ret
-            this->ret();
-            break;
-        case 0b111110: // halt
-            this->halt();
-            break;
-        case 0b000000: // nop
-            break;
-        default:
-            this->_running = false;
-            return std::unexpected(IloError::InvalidOpcode);
+    case 0b110001: // add
+        this->add(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b101001: // sub
+        this->sub(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b100101: // mul
+        this->mul(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b111001: // div
+        this->div(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b110101: // and
+        this->andd(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b101101: // or
+        this->orr(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b111101: // xor
+        this->xorr(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b100011: // sll
+        this->sll(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b110011: // srl
+        this->srl(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b010001: // sra
+        this->sra(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b101011: // eq
+        this->eq(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b111011: // lt
+        this->lt(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b100111: // load
+        this->load(GET_ARGA(instruction));
+        this->_pc++;
+        break;
+    case 0b110111: // store
+        this->store(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b101111: // put
+        this->put(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->_pc++;
+        break;
+    case 0b100001: // pick
+        this->pick(GET_ARGA(instruction));
+        this->_pc++;
+        break;
+    case 0b010000: // immh
+        this->immh(GET_IMMEDIATE(instruction));
+        this->_pc++;
+        break;
+    case 0b001000: // imml
+        this->imml(GET_IMMEDIATE(instruction));
+        this->_pc++;
+        break;
+    case 0b011000: // jmp
+        this->jmp(GET_IMMEDIATE(instruction));
+        break;
+    case 0b000100: // jmpif
+        this->jmpif(GET_IMMEDIATE(instruction));
+        break;
+    case 0b010100: // call
+        this->call(GET_IMMEDIATE(instruction));
+        break;
+    case 0b001100: // ret
+        this->ret();
+        break;
+    case 0b111110: // halt
+        this->halt();
+        break;
+    case 0b000000: // nop
+        break;
+    default:
+        this->_running = false;
+        return std::unexpected(IloError::InvalidOpcode);
     }
     return {};
 }
