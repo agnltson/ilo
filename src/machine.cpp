@@ -77,9 +77,18 @@ void Machine::run() {
             log(res.error());
             return;
         }
+        this->display();
 #ifdef DBG
         this->debug();
 #endif // DBG
+    }
+}
+
+void Machine::display() {
+    char c = static_cast<char>(this->_memory[DISPLAY_DATA_ADDR]);
+    if (c) {
+        std::cout << c;
+        this->_memory[DISPLAY_DATA_ADDR] = 0;
     }
 }
 
