@@ -23,7 +23,7 @@ inline int32_t i26_to_i32(int32_t val) {
 #define GET_ARGB(inst) ((inst >> (OPCODE_SIZE + OPERAND_SIZE)) & 0x1F)
 #define GET_IMMEDIATE(inst) (i26_to_i32((inst >> OPCODE_SIZE) & 0x3FFFFFF))
 
-Machine::Machine():_stack_frame(), _memory({0}), _running(false) {}
+Machine::Machine():_stack_frame(), _memory(0), _running(false) {}
 
 Machine::~Machine() {}
 

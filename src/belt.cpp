@@ -2,7 +2,7 @@
 
 #include "machine/belt.hpp"
 
-Belt::Belt():_data({0}), _head(0){}
+Belt::Belt():_data(0), _head(0){}
 
 Belt::Belt(const Belt* caller_belt):_head(caller_belt->_head){
     memcpy(_data, caller_belt->_data, sizeof(int32_t)*BELT_SIZE);
