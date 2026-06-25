@@ -19,8 +19,10 @@ SRC_DIR      := src
 TEST_DIR     := tests
 BUILD_DIR    := build
 
-CLANG_FORMAT := clang-format
-CLANG_TIDY   := clang-tidy
+CLANG_FORMAT := clang-format-22
+CLANG_TIDY   := clang-tidy-22
+
+TIDY_FLAGS := $(INCLUDES) $(CSTD)
 
 # ==============================
 # Sources
@@ -85,8 +87,7 @@ debug:
 .PHONY: format
 format:
 	@echo "Formatting..."
-	@find $(SRC_DIR) include $(TEST_DIR) -name "*.cpp" -o -name "*.hpp" | \
-	xargs $(CLANG_FORMAT) -i
+	@find $(SRC_DIR) include $(TEST_DIR) \( -name "*.cpp" -o -name "*.hpp" \) -print | xargs -r $(CLANG_FORMAT) -i
 
 # ==============================
 # Tidy
@@ -96,7 +97,7 @@ format:
 tidy:
 	@echo "Running clang-tidy..."
 	@for file in $(SRC_FILES); do \
-		$(CLANG_TIDY) $$file -- $(INCLUDES) $(CFLAGS) || exit 1; \
+		$(CLANG_TIDY) $$file -- $(TIDY_FLAGS) || exit 1; \
 	done
 
 # ==============================
