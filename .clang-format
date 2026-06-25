@@ -5,6 +5,17 @@ ColumnLimit: 100
 
 PointerAlignment: Left
 BreakBeforeBraces: Attach
-AllowShortIfStatementsOnASingleLine: false
+
+AccessModifierOffset: -4
+AlwaysBreakTemplateDeclarations: Yes
+
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
+
+SpaceBeforeCpp11BracedList: false
+InsertBraces: false
+
+IndentPPDirectives: None
+
+AllowShortCaseLabelsOnASingleLine: false
