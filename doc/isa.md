@@ -18,7 +18,7 @@ The architecture contains:
 - A flat 32-bit address space
 - A hardware frame stack (opaque to software)
 
-Memory is word-addressed (32-bit words).
+Memory is byte-addressed.
 
 ---
 
@@ -398,7 +398,7 @@ Execution stops.
 - All instructions are 32 bits.
 - All unused fields MUST be zero.
 - Type is determined by bit[0].
-- Memory is 32-bit word addressed.
+- Memory is byte addressed.
 - Memory uses little-endian byte order.
 - Arithmetic is two's complement signed.
 - The scratchpad is hardware-local to each frame and not memory-mapped.

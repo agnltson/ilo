@@ -7,8 +7,8 @@
 #include "error.hpp"
 #include "machine/frame.hpp"
 
-#define MEMORY_SIZE 0xFFFF
-#define DISPLAY_DATA_ADDR 0xFFFE
+#define MEMORY_SIZE 0xFFFFF
+#define DISPLAY_DATA_ADDR 0xFFFFA
 
 class Machine {
 public:
@@ -31,8 +31,11 @@ private:
 
     int32_t _pc;
     std::vector<Frame*> _stack_frame;
-    int32_t _memory[MEMORY_SIZE];
+    uint8_t _memory[MEMORY_SIZE];
     bool _running;
+
+    uint32_t mem_read(uint32_t word_addr) const;
+    void mem_write(uint32_t word_addr, uint32_t val);
 
     void add(uint8_t, uint8_t);
     void sub(uint8_t, uint8_t);
@@ -57,6 +60,7 @@ private:
     void call(int32_t);
     void ret();
     void halt();
+    void dump_mem(std::string path) const;
 
 #ifdef DBG
 public:

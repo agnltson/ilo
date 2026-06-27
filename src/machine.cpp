@@ -60,19 +60,25 @@ std::expected<void, IloError> Machine::load_program(std::string binary_path) {
     while (file.peek() != EOF) {
         uint32_t value = read_u32_le(file);
         if (file) {
-            this->_memory[i] = value;
-            i++;
+            this->mem_write(i, value);
+            i += 4;
         }
     }
+#ifdef DBG
+    this->dump_mem("mem.html");
+#endif // DBG
     return {};
 }
 
 void Machine::run() {
     this->_running = true;
     this->_stack_frame.push_back(new Frame(0));
+#ifdef DBG
+        this->debug();
+#endif // DBG
 
     while (this->_running) {
-        std::expected<void, IloError> res = this->process_instruction(this->_memory[this->_pc]);
+        std::expected<void, IloError> res = this->process_instruction(this->mem_read(this->_pc));
         if (!res) {
             log(res.error());
             return;
@@ -85,10 +91,10 @@ void Machine::run() {
 }
 
 void Machine::display() {
-    char c = static_cast<char>(this->_memory[DISPLAY_DATA_ADDR]);
+    char c = static_cast<char>(this->mem_read(DISPLAY_DATA_ADDR));
     if (c) {
         std::cout << c;
-        this->_memory[DISPLAY_DATA_ADDR] = 0;
+        this->mem_write(DISPLAY_DATA_ADDR, 0);
     }
 }
 
@@ -105,7 +111,7 @@ void Machine::frame_add() {
 }
 
 void Machine::inc_pc() {
-    ++this->_pc;
+    this->_pc += 4;
 }
 
 void Machine::push_belt(int32_t val) {
@@ -136,79 +142,134 @@ void Machine::debug() const {
 }
 #endif // DBG
 
+void Machine::dump_mem(std::string path) const {
+    FILE* f = fopen(path.c_str(), "w");
+    if (!f) return;
+
+    const int COLS = 16;
+
+    fprintf(f, "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+               "<title>Memory Dump</title><style>"
+               "body{font-family:monospace;background:#1e1e1e;color:#d4d4d4;padding:1rem}"
+               "h1{color:#9cdcfe;font-size:1rem;margin-bottom:1rem}"
+               "table{border-collapse:collapse;font-size:0.85rem}"
+               "th{color:#569cd6;text-align:left;padding:2px 8px;border-bottom:1px solid #333}"
+               "td{padding:2px 8px;white-space:pre}"
+               "tr:hover td{background:#2d2d2d}"
+               ".addr{color:#569cd6}"
+               ".hex span:hover{background:#264f78;cursor:default}"
+               ".nul{color:#444}"
+               ".ascii{color:#ce9178;border-left:1px solid #333;padding-left:12px}"
+               "</style></head><body>"
+               "<h1>Memory Dump &mdash; %zu bytes</h1>"
+               "<table><thead><tr>"
+               "<th>Address</th><th colspan='16'>Hex</th><th>ASCII</th>"
+               "</tr></thead><tbody>\n",
+               sizeof(_memory));
+
+    for (size_t i = 0; i < sizeof(_memory); i += COLS) {
+        fprintf(f, "<tr><td class='addr'>%08zX</td><td class='hex'>", i);
+
+        for (int j = 0; j < COLS; j++) {
+            size_t idx = i + j;
+            if (idx < sizeof(_memory)) {
+                uint8_t b = _memory[idx];
+                const char* cls = (b == 0) ? "nul" : "";
+                fprintf(f, "<span class='%s'>%02X </span>", cls, b);
+            } else {
+                fprintf(f, "   ");
+            }
+        }
+
+        fprintf(f, "</td><td class='ascii'>");
+        for (int j = 0; j < COLS; j++) {
+            size_t idx = i + j;
+            if (idx < sizeof(_memory)) {
+                uint8_t b = _memory[idx];
+                fputc((b >= 0x20 && b < 0x7F) ? (char)b : '.', f);
+            }
+        }
+
+        fprintf(f, "</td></tr>\n");
+    }
+
+    fprintf(f, "</tbody></table></body></html>\n");
+    fclose(f);
+}
+
 std::expected<void, IloError> Machine::process_instruction(uint32_t instruction) {
     switch (GET_OPCODE(instruction)) {
     case 0b110001: // add
         this->add(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b101001: // sub
         this->sub(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b100101: // mul
         this->mul(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b111001: // div
         this->div(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b110101: // and
         this->andd(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b101101: // or
         this->orr(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b111101: // xor
         this->xorr(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b100011: // sll
         this->sll(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b110011: // srl
         this->srl(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b010001: // sra
         this->sra(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b101011: // eq
         this->eq(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b111011: // lt
         this->lt(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b100111: // load
         this->load(GET_ARGA(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b110111: // store
         this->store(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b101111: // put
         this->put(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b100001: // pick
         this->pick(GET_ARGA(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b010000: // immh
         this->immh(GET_IMMEDIATE(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b001000: // imml
         this->imml(GET_IMMEDIATE(instruction));
-        this->_pc++;
+        this->inc_pc();
         break;
     case 0b011000: // jmp
         this->jmp(GET_IMMEDIATE(instruction));
@@ -232,6 +293,19 @@ std::expected<void, IloError> Machine::process_instruction(uint32_t instruction)
         return std::unexpected(IloError::InvalidOpcode);
     }
     return {};
+}
+
+inline uint32_t Machine::mem_read(uint32_t addr) const {
+    return this->_memory[addr]
+        | (this->_memory[addr+1]<<8)
+        | (this->_memory[addr+2]<<16)
+        | (this->_memory[addr+3]<<24);
+}
+inline void Machine::mem_write(uint32_t addr, uint32_t val) {
+    this->_memory[addr] = val & 0xFF;
+    this->_memory[addr+1] = (val>>8) & 0xFF;
+    this->_memory[addr+2] = (val>>16) & 0xFF;
+    this->_memory[addr+3] = (val>>24) & 0xFF;
 }
 
 #define PUSH_BINARY(op) (this->push_belt(this->get_belt(idxa) op this->get_belt(idxb)))
@@ -289,11 +363,11 @@ void Machine::lt(uint8_t idxa, uint8_t idxb) {
 }
 
 void Machine::load(uint8_t idxa) {
-    this->push_belt(this->_memory[this->get_belt(idxa)]);
+    this->push_belt(static_cast<int32_t>(mem_read(this->get_belt(idxa))));
 }
 
 void Machine::store(uint8_t idxa, uint8_t idxb) {
-    this->_memory[this->get_belt(idxa)] = this->get_belt(idxb);
+    mem_write(this->get_belt(idxa), static_cast<uint32_t>(this->get_belt(idxb)));
 }
 
 void Machine::put(uint8_t idxa, uint8_t idxb) {
@@ -319,6 +393,8 @@ void Machine::jmp(int32_t imm) {
 void Machine::jmpif(int32_t imm) {
     if (this->get_belt(0) == 1) {
         this->_pc = this->_pc + 1 + imm;
+    } else {
+        this->_pc += 4;
     }
 }
 
