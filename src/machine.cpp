@@ -311,18 +311,18 @@ std::expected<void, IloError> Machine::process_instruction(uint32_t instruction)
     return {};
 }
 
-inline uint32_t Machine::mem_read8(uint32_t addr) const {
+inline uint8_t Machine::mem_read8(uint32_t addr) const {
     return this->_memory[addr];
 }
-inline void Machine::mem_write8(uint32_t addr, uint32_t val) {
-    this->_memory[addr] = val & 0xFF;
+inline void Machine::mem_write8(uint32_t addr, uint8_t val) {
+    this->_memory[addr] = val;
 }
 
-inline uint32_t Machine::mem_read16(uint32_t addr) const {
+inline uint16_t Machine::mem_read16(uint32_t addr) const {
     return this->_memory[addr]
         | (this->_memory[addr+1]<<8);
 }
-inline void Machine::mem_write16(uint32_t addr, uint32_t val) {
+inline void Machine::mem_write16(uint32_t addr, uint16_t val) {
     this->_memory[addr] = val & 0xFF;
     this->_memory[addr+1] = (val>>8) & 0xFF;
 }

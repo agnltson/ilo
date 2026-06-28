@@ -34,10 +34,10 @@ private:
     uint8_t _memory[MEMORY_SIZE];
     bool _running;
 
-    uint32_t mem_read8(uint32_t word_addr) const;
-    void mem_write8(uint32_t word_addr, uint32_t val);
-    uint32_t mem_read16(uint32_t word_addr) const;
-    void mem_write16(uint32_t word_addr, uint32_t val);
+    uint8_t mem_read8(uint32_t word_addr) const;
+    void mem_write8(uint32_t word_addr, uint8_t val);
+    uint16_t mem_read16(uint32_t word_addr) const;
+    void mem_write16(uint32_t word_addr, uint16_t val);
     uint32_t mem_read32(uint32_t word_addr) const;
     void mem_write32(uint32_t word_addr, uint32_t val);
 
