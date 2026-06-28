@@ -60,7 +60,7 @@ std::expected<void, IloError> Machine::load_program(std::string binary_path) {
     while (file.peek() != EOF) {
         uint32_t value = read_u32_le(file);
         if (file) {
-            this->mem_write(i, value);
+            this->mem_write32(i, value);
             i += 4;
         }
     }
@@ -78,7 +78,7 @@ void Machine::run() {
 #endif // DBG
 
     while (this->_running) {
-        std::expected<void, IloError> res = this->process_instruction(this->mem_read(this->_pc));
+        std::expected<void, IloError> res = this->process_instruction(this->mem_read32(this->_pc));
         if (!res) {
             log(res.error());
             return;
@@ -91,10 +91,10 @@ void Machine::run() {
 }
 
 void Machine::display() {
-    char c = static_cast<char>(this->mem_read(DISPLAY_DATA_ADDR));
+    char c = (this->mem_read8(DISPLAY_DATA_ADDR));
     if (c) {
         std::cout << c;
-        this->mem_write(DISPLAY_DATA_ADDR, 0);
+        this->mem_write8(DISPLAY_DATA_ADDR, 0);
     }
 }
 
@@ -199,85 +199,101 @@ void Machine::dump_mem(std::string path) const {
 
 std::expected<void, IloError> Machine::process_instruction(uint32_t instruction) {
     switch (GET_OPCODE(instruction)) {
-    case 0b110001: // add
+    case 0b000001: // add
         this->add(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b101001: // sub
+    case 0b000011: // sub
         this->sub(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b100101: // mul
+    case 0b000101: // mul
         this->mul(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b111001: // div
+    case 0b000111: // div
         this->div(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b110101: // and
+    case 0b001001: // and
         this->andd(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b101101: // or
+    case 0b001011: // or
         this->orr(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b111101: // xor
+    case 0b001101: // xor
         this->xorr(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b100011: // sll
+    case 0b001111: // sll
         this->sll(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b110011: // srl
+    case 0b010001: // srl
         this->srl(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b010001: // sra
+    case 0b010011: // sra
         this->sra(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b101011: // eq
+    case 0b010101: // eq
         this->eq(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b111011: // lt
+    case 0b010111: // lt
         this->lt(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b100111: // load
-        this->load(GET_ARGA(instruction));
-        this->inc_pc();
-        break;
-    case 0b110111: // store
-        this->store(GET_ARGA(instruction), GET_ARGB(instruction));
-        this->inc_pc();
-        break;
-    case 0b101111: // put
+    case 0b011001: // put
         this->put(GET_ARGA(instruction), GET_ARGB(instruction));
         this->inc_pc();
         break;
-    case 0b100001: // pick
+    case 0b011011: // pick
         this->pick(GET_ARGA(instruction));
         this->inc_pc();
         break;
-    case 0b010000: // immh
+    case 0b100001: // load8
+        this->load8(GET_ARGA(instruction));
+        this->inc_pc();
+        break;
+    case 0b100011: // store8
+        this->store8(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->inc_pc();
+        break;
+    case 0b100101: // load16
+        this->load16(GET_ARGA(instruction));
+        this->inc_pc();
+        break;
+    case 0b100111: // store16
+        this->store16(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->inc_pc();
+        break;
+    case 0b101001: // load32
+        this->load32(GET_ARGA(instruction));
+        this->inc_pc();
+        break;
+    case 0b101011: // store32
+        this->store32(GET_ARGA(instruction), GET_ARGB(instruction));
+        this->inc_pc();
+        break;
+    case 0b000010: // immh
         this->immh(GET_IMMEDIATE(instruction));
         this->inc_pc();
         break;
-    case 0b001000: // imml
+    case 0b000100: // imml
         this->imml(GET_IMMEDIATE(instruction));
         this->inc_pc();
         break;
-    case 0b011000: // jmp
+    case 0b000110: // jmp
         this->jmp(GET_IMMEDIATE(instruction));
         break;
-    case 0b000100: // jmpif
+    case 0b001000: // jmpif
         this->jmpif(GET_IMMEDIATE(instruction));
         break;
-    case 0b010100: // call
+    case 0b001010: // call
         this->call(GET_IMMEDIATE(instruction));
         break;
     case 0b001100: // ret
@@ -295,13 +311,29 @@ std::expected<void, IloError> Machine::process_instruction(uint32_t instruction)
     return {};
 }
 
-inline uint32_t Machine::mem_read(uint32_t addr) const {
+inline uint32_t Machine::mem_read8(uint32_t addr) const {
+    return this->_memory[addr];
+}
+inline void Machine::mem_write8(uint32_t addr, uint32_t val) {
+    this->_memory[addr] = val & 0xFF;
+}
+
+inline uint32_t Machine::mem_read16(uint32_t addr) const {
+    return this->_memory[addr]
+        | (this->_memory[addr+1]<<8);
+}
+inline void Machine::mem_write16(uint32_t addr, uint32_t val) {
+    this->_memory[addr] = val & 0xFF;
+    this->_memory[addr+1] = (val>>8) & 0xFF;
+}
+
+inline uint32_t Machine::mem_read32(uint32_t addr) const {
     return this->_memory[addr]
         | (this->_memory[addr+1]<<8)
         | (this->_memory[addr+2]<<16)
         | (this->_memory[addr+3]<<24);
 }
-inline void Machine::mem_write(uint32_t addr, uint32_t val) {
+inline void Machine::mem_write32(uint32_t addr, uint32_t val) {
     this->_memory[addr] = val & 0xFF;
     this->_memory[addr+1] = (val>>8) & 0xFF;
     this->_memory[addr+2] = (val>>16) & 0xFF;
@@ -362,12 +394,28 @@ void Machine::lt(uint8_t idxa, uint8_t idxb) {
     this->push_belt(this->get_belt(idxa) < this->get_belt(idxb) ? 1 : 0);
 }
 
-void Machine::load(uint8_t idxa) {
-    this->push_belt(static_cast<int32_t>(mem_read(this->get_belt(idxa))));
+void Machine::load8(uint8_t idxa) {
+    this->push_belt(static_cast<int32_t>(mem_read8(this->get_belt(idxa))));
 }
 
-void Machine::store(uint8_t idxa, uint8_t idxb) {
-    mem_write(this->get_belt(idxa), static_cast<uint32_t>(this->get_belt(idxb)));
+void Machine::store8(uint8_t idxa, uint8_t idxb) {
+    mem_write8(this->get_belt(idxa), static_cast<uint32_t>(this->get_belt(idxb)));
+}
+
+void Machine::load16(uint8_t idxa) {
+    this->push_belt(static_cast<int32_t>(mem_read16(this->get_belt(idxa))));
+}
+
+void Machine::store16(uint8_t idxa, uint8_t idxb) {
+    mem_write16(this->get_belt(idxa), static_cast<uint32_t>(this->get_belt(idxb)));
+}
+
+void Machine::load32(uint8_t idxa) {
+    this->push_belt(static_cast<int32_t>(mem_read32(this->get_belt(idxa))));
+}
+
+void Machine::store32(uint8_t idxa, uint8_t idxb) {
+    mem_write32(this->get_belt(idxa), static_cast<uint32_t>(this->get_belt(idxb)));
 }
 
 void Machine::put(uint8_t idxa, uint8_t idxb) {

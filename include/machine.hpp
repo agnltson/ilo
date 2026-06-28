@@ -34,8 +34,12 @@ private:
     uint8_t _memory[MEMORY_SIZE];
     bool _running;
 
-    uint32_t mem_read(uint32_t word_addr) const;
-    void mem_write(uint32_t word_addr, uint32_t val);
+    uint32_t mem_read8(uint32_t word_addr) const;
+    void mem_write8(uint32_t word_addr, uint32_t val);
+    uint32_t mem_read16(uint32_t word_addr) const;
+    void mem_write16(uint32_t word_addr, uint32_t val);
+    uint32_t mem_read32(uint32_t word_addr) const;
+    void mem_write32(uint32_t word_addr, uint32_t val);
 
     void add(uint8_t, uint8_t);
     void sub(uint8_t, uint8_t);
@@ -49,8 +53,12 @@ private:
     void sra(uint8_t, uint8_t);
     void eq(uint8_t, uint8_t);
     void lt(uint8_t, uint8_t);
-    void load(uint8_t);
-    void store(uint8_t, uint8_t);
+    void load8(uint8_t);
+    void store8(uint8_t, uint8_t);
+    void load16(uint8_t);
+    void store16(uint8_t, uint8_t);
+    void load32(uint8_t);
+    void store32(uint8_t, uint8_t);
     void put(uint8_t, uint8_t);
     void pick(uint8_t);
     void immh(int32_t);

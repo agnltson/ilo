@@ -114,10 +114,10 @@ All arithmetic is 32-bit signed.
 
 | Instruction | Opcode |
 |-------------|--------|
-| add | 110001 |
-| sub | 101001 |
-| mul | 100101 |
-| div | 111001 |
+| add | 000001 |
+| sub | 000011 |
+| mul | 000101 |
+| div | 000111 |
 
 Semantics:
 
@@ -134,12 +134,12 @@ Division by zero behavior: implementation-defined.
 
 | Instruction | Opcode |
 |-------------|--------|
-| and | 110101 |
-| or  | 101101 |
-| xor | 111101 |
-| sll | 100011 |
-| srl | 110011 |
-| sra | 010001 |
+| and | 001001 |
+| or  | 001011 |
+| xor | 001101 |
+| sll | 001111 |
+| srl | 010001 |
+| sra | 010011 |
 
 Semantics:
 
@@ -161,8 +161,8 @@ Result:
 
 | Instruction | Opcode |
 |-------------|--------|
-| eq | 101011 |
-| lt | 111011 |
+| eq | 010101 |
+| lt | 010111 |
 
 Semantics:
 
@@ -175,41 +175,7 @@ belt[0] = (belt[A] == belt[B]) ? 1 : 0
 
 ---
 
-## 4.4 Memory
-
-Memory is a flat array of 32-bit words.
-
-### load
-
-| Opcode |
-|--------|
-| 100111 |
-
-Semantics:
-
-```
-belt[0] = memory[belt[A]]
-```
-
-OperandB MUST be zero.
-
----
-
-### store
-
-| Opcode |
-|--------|
-| 110111 |
-
-Semantics:
-
-```
-memory[belt[A]] = belt[B]
-```
-
----
-
-## 4.5 Scratchpad
+## 4.4 Scratchpad
 
 The scratchpad is a set of 32 private hardware registers per frame.
 It is initialized to zero on frame creation and is not accessible from other frames.
@@ -218,7 +184,7 @@ It is initialized to zero on frame creation and is not accessible from other fra
 
 | Opcode |
 |--------|
-| 101111 |
+| 011001 |
 
 Semantics:
 
@@ -232,7 +198,7 @@ scratchpad[A] = belt[B]
 
 | Opcode |
 |--------|
-| 100001 |
+| 011011 |
 
 Semantics:
 
@@ -241,6 +207,44 @@ belt[0] = scratchpad[A]
 ```
 
 OperandB MUST be zero.
+
+---
+
+## 4.5 Memory
+
+Memory is a flat array of 32-bit words.
+
+### load
+
+| Instruction | Opcode |
+|-------------|--------|
+| load8  | 100001 |
+| load16 | 100101 |
+| load32 | 101011 |
+
+Semantics:
+
+```
+belt[0] = memory[belt[A]]
+```
+
+OperandB MUST be zero.
+
+---
+
+### store
+
+| Instruction | Opcode |
+|-------------|--------|
+| store8  | 100011 |
+| store16 | 100111 |
+| store32 | 101011 |
+
+Semantics:
+
+```
+memory[belt[A]] = belt[B]
+```
 
 ---
 
@@ -263,7 +267,7 @@ No effect.
 
 | Opcode |
 |--------|
-| 010000 |
+| 000010 |
 
 Semantics:
 
@@ -279,7 +283,7 @@ Only the upper 20 bits of the Immediate field are significant.
 
 | Opcode |
 |--------|
-| 001000 |
+| 000100 |
 
 Semantics:
 
@@ -315,7 +319,7 @@ target = PC + 1 + offset
 
 | Opcode |
 |--------|
-| 011000 |
+| 000110 |
 
 Semantics:
 
@@ -329,7 +333,7 @@ PC = target
 
 | Opcode |
 |--------|
-| 000100 |
+| 001000 |
 
 Semantics:
 
@@ -344,7 +348,7 @@ if belt[0] != 0:
 
 | Opcode |
 |--------|
-| 010100 |
+| 001010 |
 
 Semantics:
 
