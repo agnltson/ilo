@@ -52,11 +52,13 @@ std::expected<void, IloError> Machine::load_program(std::string binary_path) {
         return std::unexpected(IloError::NoInputFile);
     }
 
-    size_t i = 0;
     int err = check_validity(file);
     if (err) {
         return std::unexpected(IloError::InvalidBinaryMetadata);
     }
+    uint32_t org = read_u32_le(file);
+    this->_pc = org;
+    size_t i = org;
     while (file.peek() != EOF) {
         uint32_t value = read_u32_le(file);
         if (file) {
@@ -72,7 +74,7 @@ std::expected<void, IloError> Machine::load_program(std::string binary_path) {
 
 void Machine::run() {
     this->_running = true;
-    this->_stack_frame.push_back(new Frame(0));
+    this->_stack_frame.push_back(new Frame(this->_pc));
 #ifdef DBG
         this->debug();
 #endif // DBG
